@@ -60,6 +60,51 @@ class GoTree
   @@conshash[[false,ZERO,ZERO]] = ZERO
 end
 
+ONE  ZERO.snoc(ZERO)
+
+
+### literal
+def encode_char (ch)
+  a = ZERO
+  code = ch.bytes.to_z[0]
+  for i in 0..6
+    if (code >> i & 1) == 0
+      a = ZERO.snoc(a)
+    else
+      a = ONE.snoc(a)
+    end
+  end
+  a
+end
+
+def encode_string (str)
+  a = ZERO
+  for i in str.length
+    a = makechar(str[i]).snoc(a)
+  end
+  a
+end
+
+def decode_char (x)
+  a = x
+  ch = 0
+  while a != ZERO
+    ch <<= 1
+    ch += 1 if a.car == ONE
+    a = a.cdr
+  end
+  ch.chr
+end
+
+def decode_string (x)
+  a = x
+  str = ""
+  while a != ZERO
+    str = str + decode_char(a.car)
+    a = a.cdr
+  end
+  str
+end
 
 
 ### evaluator
