@@ -2,10 +2,9 @@
 
 
 
-# internal expression
+### internal expression
 
 class GoTree
-  attr_accessor :pebble
   @@conshash = {}
 
   def initialize(pebble,left,right)
@@ -18,6 +17,7 @@ class GoTree
     self.equal?(obj)
   end
 
+  ## accessor
   def car
     @left || ZERO
   end
@@ -26,6 +26,7 @@ class GoTree
     @right || ZERO
   end
 
+  ## generator
   def cons(right)
     var = @@conshash.fetch([false,self,right],nil)
     if var
@@ -43,6 +44,15 @@ class GoTree
       @@conshash[[true,self,right]] = GoTree.new(true,self,right);
     end
   end
+
+  ## predicate
+  def atom?()
+    @pebble
+  end
+
+  def null?()
+    !@pebble
+  end
 end
 
 ZERO = GoTree.new(0,nil,nil)
@@ -52,5 +62,27 @@ end
 
 
 
+### evaluator
 
+def apply(fn,args)
+  #FIXME
+end
+
+def eval(x)
+  if x.atom?
+    apply(x.car,x.cdr)
+  else
+    apply(x.car,evlis(x.cdr))
+  end
+end
+
+def evalis(x)
+  if x.equal?(ZERO)
+    ZERO
+  elsif x.atom?
+    x.car.cons(evlis(x.cdr))
+  else
+    eval(x.car).cons(evlis(x.cdr))
+  end
+end
 
