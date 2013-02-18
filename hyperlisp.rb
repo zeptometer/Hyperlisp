@@ -27,16 +27,16 @@ class GoTree
   end
 
   ## generator
-  def cons(right)
+  def cons (right)
     var = @@conshash.fetch([false,self,right],nil)
     if var
       var
     else
-      @@conshash[[false,self.right]] = GoTree.new(false,self,right);
+      @@conshash[[false,self,right]] = GoTree.new(false,self,right);
     end
   end
 
-  def snoc(right)
+  def snoc (right)
     var = @@conshash.fetch([true,self,right],nil)
     if var
       var
@@ -46,11 +46,11 @@ class GoTree
   end
 
   ## predicate
-  def atom?()
+  def atom? ()
     @pebble
   end
 
-  def null?()
+  def null? ()
     !@pebble
   end
 end
@@ -60,7 +60,7 @@ class GoTree
   @@conshash[[false,ZERO,ZERO]] = ZERO
 end
 
-ONE  ZERO.snoc(ZERO)
+ONE = ZERO.snoc(ZERO)
 
 
 ### literal
