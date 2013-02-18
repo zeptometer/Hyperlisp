@@ -53,6 +53,17 @@ class GoTree
   def null? ()
     !@pebble
   end
+
+  ## print
+  def to_s ()
+    if self.equal?(ZERO)
+      "0"
+    elsif atom?
+      "[#@left.#@right]"
+    else
+      "(#@left.#@right)"
+    end
+  end
 end
 
 ZERO = GoTree.new(0,nil,nil)
@@ -105,6 +116,39 @@ def decode_string (x)
     a = a.cdr
   end
   str
+end
+
+
+### parser
+class Parser
+  def initialize(str)
+    @str = str
+    @idx = 0
+  end
+
+  def readc()
+    @idx += 1
+    @str[@idx-1]
+  end
+  
+  def parse()
+    case readc()
+    when "(" then
+      left = parse
+      readc()
+      right = parse
+      readc()
+      left.cons(right)
+    when "[" then
+      left = parse
+      readc()
+      right = parse
+      readc()
+      left.snoc(right)
+    when "0" then
+      ZERO
+    end
+  end
 end
 
 
