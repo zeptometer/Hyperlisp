@@ -109,12 +109,54 @@ end
 
 
 ### evaluator
+## lambda expression
+LAMBDA = encode_string("lambda")
 
-def apply(fn,args)
-  #FIXME
+def lambda? (x)
+  x.car.equal?(LAMBDA)
 end
 
-def eval(x)
+
+def apply (fn,args)
+  if lambda?(fn)
+    apply_lambda(fn,args)
+  elsif var = $symbol_primitive_function_map.fetch(fn,nil)
+    var.call(args)
+  elsif var = $symbol_function_map.fetch(fn,nil)
+    apply(var,args)
+  else
+    puts "Error: definition for #{fn} was not found."
+  end
+end
+
+def apply_lambda (fn,args)
+  evals(subst_lambda(fn.cdr.car,fn.cdr.cdr.car,args))
+end
+
+def subst_lambda (param,body,args)
+  if param.equal?(ZERO)
+    body
+  elsif param.atom?
+    destruct_tree(param.car,args)
+  elsif body.atom?
+    subst_lambda(param.car,body.car,args).snoc(subst_lambda(param.cdr,body.cdr,args))
+  else
+    subst_lambda(param.car,body.car,args).cons(subst_lambda(param.cdr,body.cdr,args))
+  end
+end
+
+def destruct_tree (location,args)
+  if location.equal?(ONE)
+    args
+  elsif location.car.equal?(ZERO)
+    destruct_tree(location.cdr,args.cdr)
+  else
+    destruct_tree(location.car,args.car)
+  end
+end
+
+## eval
+def evals (x)
   if x.atom?
     apply(x.car,x.cdr)
   else
@@ -122,13 +164,76 @@ def eval(x)
   end
 end
 
-def evalis(x)
+def evlis (x)
   if x.equal?(ZERO)
     ZERO
   elsif x.atom?
     x.car.cons(evlis(x.cdr))
   else
-    eval(x.car).cons(evlis(x.cdr))
+    evals(x.car).cons(evlis(x.cdr))
   end
 end
 
+### build-in functions
+## primitive functions
+$symbol_primitive_function_map = {}
+
+def define_primitive (name,&body)
+  if name.is_a?(String)
+    $symbol_primitive_function_map[encode_string(name)] = body
+  else
+    $symbol_primitive_function_map[name] = body
+  end
+end
+
+define_primitive ONE do |x|
+  x.car
+end
+
+define_primitive "eq" do |x|
+  if x.car.equal?(x.cdr.car)
+    ONE
+  else
+    ZERO
+  end
+end
+
+define_primitive "atom" do |x|
+  if x.car.atom?
+    ONE
+  else
+    ZERO
+  end
+end
+
+define_primitive "null" do |x|
+  if x.car.null?
+    ONE
+  else
+    ZERO
+  end
+end
+
+define_primitive "if" do |x|
+  pred = x.car
+  thenbody = x.cdr.car
+  elsebody = x.cdr.cdr.car
+  if pred.equal?(ONE)
+    evals(thenbody)
+  else
+    evals(elsebody)
+  end
+end
+
+## built-in-functions
+$symbol_function_map = {}
+
+def define_function(name,tree)
+  if name.is_a?(String)
+    $symbol_function_map[encode_string(name)] = tree
+  elsif name.is_a?(GoTree)
+    $symbol_function_map[name] = tree
+  else
+    puts "error: name is invalid."
+  end
+end
