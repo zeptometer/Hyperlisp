@@ -66,7 +66,7 @@ ONE = ZERO.snoc(ZERO)
 ### literal
 def encode_char (ch)
   a = ZERO
-  code = ch.bytes.to_z[0]
+  code = ch.bytes.to_a[0]
   for i in 0..6
     if (code >> i & 1) == 0
       a = ZERO.snoc(a)
@@ -79,8 +79,9 @@ end
 
 def encode_string (str)
   a = ZERO
-  for i in str.length
-    a = makechar(str[i]).snoc(a)
+  rstr = str.reverse
+  for i in 0...str.length
+    a = encode_char(rstr[i]).snoc(a)
   end
   a
 end
